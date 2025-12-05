@@ -1,10 +1,21 @@
 import { Trans } from "@lingui/react";
 import { Link, useSearch } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { CoinsIcon, MessageSquareIcon, PlusIcon } from "lucide-react";
+import {
+  CoinsIcon,
+  LayoutGridIcon,
+  ListIcon,
+  MessageSquareIcon,
+  PlusIcon,
+} from "lucide-react";
 import type { FC } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { formatLocaleDate } from "../../../../../../../lib/date/formatLocaleDate";
 import { useConfig } from "../../../../../../hooks/useConfig";
@@ -26,7 +37,8 @@ export const SessionsTab: FC<{
   const sessions = projectData.pages.flatMap((page) => page.sessions);
 
   const sessionProcesses = useAtomValue(sessionProcessesAtom);
-  const { config } = useConfig();
+  const { config, updateConfig } = useConfig();
+  const viewMode = config.sessionViewMode ?? "card";
   const search = useSearch({
     from: "/projects/$projectId/session",
   });
@@ -76,6 +88,38 @@ export const SessionsTab: FC<{
           <h2 className="font-semibold text-lg">
             <Trans id="sessions.title" />
           </h2>
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={viewMode === "card" ? "secondary" : "ghost"}
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() =>
+                    updateConfig({ ...config, sessionViewMode: "card" })
+                  }
+                >
+                  <LayoutGridIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Card View</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() =>
+                    updateConfig({ ...config, sessionViewMode: "list" })
+                  }
+                >
+                  <ListIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>List View</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
         <p className="text-xs text-sidebar-foreground/70">
           {sessions.length} <Trans id="sessions.total" />
@@ -117,6 +161,46 @@ export const SessionsTab: FC<{
           const isRunning = sessionProcess?.status === "running";
           const isPaused = sessionProcess?.status === "paused";
 
+          // Compact List View
+          if (viewMode === "list") {
+            return (
+              <Link
+                key={session.id}
+                to="/projects/$projectId/session"
+                params={{ projectId }}
+                search={{ tab: currentTab, sessionId: session.id }}
+                className={cn(
+                  "flex items-center gap-2 px-2 py-1.5 rounded transition-colors hover:bg-blue-50/60 dark:hover:bg-blue-950/40 text-sm",
+                  isActive &&
+                    "bg-blue-100 dark:bg-blue-900/50 font-medium",
+                )}
+              >
+                {/* Status indicator dot */}
+                <span
+                  className={cn(
+                    "w-2 h-2 rounded-full shrink-0",
+                    isRunning && "bg-green-500",
+                    isPaused && "bg-yellow-500",
+                    !isRunning && !isPaused && "bg-sidebar-foreground/20",
+                  )}
+                />
+                {/* Title - truncated */}
+                <span className="flex-1 truncate text-sidebar-foreground">
+                  {title}
+                </span>
+                {/* Message count */}
+                <span className="text-xs text-sidebar-foreground/60 tabular-nums">
+                  {session.meta.messageCount}
+                </span>
+                {/* Cost */}
+                <span className="text-xs text-sidebar-foreground/60 tabular-nums w-14 text-right">
+                  ${session.meta.cost.totalUsd.toFixed(2)}
+                </span>
+              </Link>
+            );
+          }
+
+          // Card View (default)
           return (
             <Link
               key={session.id}

@@ -14,6 +14,8 @@ export const userConfigSchema = z.object({
     .default("default"),
   locale: localeSchema.optional().default("en"),
   theme: z.enum(["light", "dark", "system"]).optional().default("system"),
+  sessionViewMode: z.enum(["card", "list"]).optional().default("card"),
+  projectViewMode: z.enum(["card", "list"]).optional().default("card"),
 });
 
 export const defaultUserConfig = userConfigSchema.parse({});

@@ -64,6 +64,8 @@ export const testPlatformLayer = (overrides?: {
         permissionMode: overrides?.userConfig?.permissionMode ?? "default",
         locale: overrides?.userConfig?.locale ?? DEFAULT_LOCALE,
         theme: overrides?.userConfig?.theme ?? "system",
+        sessionViewMode: overrides?.userConfig?.sessionViewMode ?? "card",
+        projectViewMode: overrides?.userConfig?.projectViewMode ?? "card",
       }),
   });
 

@@ -11,6 +11,8 @@ const LayerImpl = Effect.gen(function* () {
     permissionMode: "default",
     locale: DEFAULT_LOCALE,
     theme: "system",
+    sessionViewMode: "card",
+    projectViewMode: "card",
   });
 
   const setUserConfig = (newConfig: UserConfig) =>
