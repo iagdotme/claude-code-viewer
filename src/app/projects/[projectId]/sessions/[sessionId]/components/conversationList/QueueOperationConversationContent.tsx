@@ -5,12 +5,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useConfig } from "@/app/hooks/useConfig";
+import { formatLocaleDate } from "@/lib/date/formatLocaleDate";
 import { normalizeQueueOperationContent } from "@/lib/conversation-schema/entry/normalizeQueueOperationContent";
 import type { QueueOperationEntry } from "@/lib/conversation-schema/entry/QueueOperationEntrySchema";
 
 export const QueueOperationConversationContent: FC<{
   conversation: QueueOperationEntry;
 }> = ({ conversation }) => {
+  const { config } = useConfig();
   const title =
     conversation.operation === "enqueue"
       ? "Queue Operation: Enqueue"
@@ -43,7 +46,10 @@ export const QueueOperationConversationContent: FC<{
               <span className="font-medium text-muted-foreground">
                 Timestamp:
               </span>{" "}
-              {conversation.timestamp}
+              {formatLocaleDate(conversation.timestamp, {
+                locale: config.locale,
+                target: "time",
+              })}
             </div>
             {conversation.operation === "enqueue" && (
               <div>

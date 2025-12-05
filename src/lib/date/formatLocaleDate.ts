@@ -48,9 +48,9 @@ export const formatLocaleDate = (
         case "month":
           return "MM/yyyy";
         case "day":
-          return "MM/dd/yyyy";
+          return "dd/MM/yyyy";
         case "time":
-          return "MM/dd/yyyy HH:mm";
+          return "dd/MM/yyyy HH:mm";
       }
     } else if (locale === "zh_CN") {
       switch (target) {
