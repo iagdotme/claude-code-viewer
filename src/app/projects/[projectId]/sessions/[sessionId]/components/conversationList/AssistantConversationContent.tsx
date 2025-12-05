@@ -7,7 +7,7 @@ import {
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import z from "zod";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -52,6 +52,7 @@ export const AssistantConversationContent: FC<{
   const { config } = useConfig();
   const syntaxTheme = resolvedTheme === "dark" ? oneDark : oneLight;
   const [isHovered, setIsHovered] = useState(false);
+  const [isThinkingHovered, setIsThinkingHovered] = useState(false);
 
   const formattedTime = timestamp
     ? formatLocaleDate(timestamp, {
@@ -70,33 +71,67 @@ export const AssistantConversationContent: FC<{
 
   if (content.type === "thinking") {
     return (
-      <Card className="bg-muted/50 border-dashed gap-2 py-3 mb-2 hover:shadow-sm transition-all duration-200">
+      <div
+        className="mb-2"
+        onMouseEnter={() => setIsThinkingHovered(true)}
+        onMouseLeave={() => setIsThinkingHovered(false)}
+      >
         <Collapsible>
           <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/80 rounded-t-lg transition-all duration-200 py-0 px-4 group">
-              <div className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-muted-foreground group-hover:text-yellow-600 transition-colors" />
-                <CardTitle className="text-sm font-medium group-hover:text-foreground transition-colors flex-1">
-                  <Trans id="assistant.thinking" />
-                </CardTitle>
+            <div
+              className={`cursor-pointer transition-all duration-200 px-2 py-1.5 rounded ${
+                isThinkingHovered
+                  ? "bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800"
+                  : "bg-transparent border border-transparent"
+              }`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={`flex items-center justify-center rounded-full p-1 transition-all duration-200 ${
+                    isThinkingHovered ? "bg-amber-100 dark:bg-amber-900/40" : ""
+                  }`}
+                >
+                  <Lightbulb
+                    className={`h-3.5 w-3.5 flex-shrink-0 transition-colors duration-200 ${
+                      isThinkingHovered
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                </div>
+                <div
+                  className={`flex-1 transition-all duration-200 ${
+                    isThinkingHovered ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <span className="text-sm font-medium">
+                    <Trans id="assistant.thinking" />
+                  </span>
+                </div>
                 {formattedTime && (
-                  <span className="text-xs text-muted-foreground/60">
+                  <span className="text-xs text-muted-foreground/60 ml-auto flex-shrink-0">
                     {formattedTime}
                   </span>
                 )}
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="py-2 px-4">
-              <div className="text-sm text-muted-foreground whitespace-pre-wrap font-mono">
-                {content.thinking}
+                <ChevronDown
+                  className={`h-3.5 w-3.5 text-muted-foreground transition-all duration-200 flex-shrink-0 ${
+                    isThinkingHovered ? "opacity-100" : "opacity-0"
+                  }`}
+                />
               </div>
             </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20 p-0 overflow-hidden mt-1">
+              <div className="py-3 px-4">
+                <div className="text-sm text-muted-foreground whitespace-pre-wrap font-mono max-h-96 overflow-y-auto">
+                  {content.thinking}
+                </div>
+              </div>
+            </Card>
           </CollapsibleContent>
         </Collapsible>
-      </Card>
+      </div>
     );
   }
 

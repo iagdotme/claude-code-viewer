@@ -1,8 +1,11 @@
 import { Trans } from "@lingui/react";
 import { useMutation } from "@tanstack/react-query";
 import {
+  CheckIcon,
+  CopyIcon,
   DownloadIcon,
   GitBranchIcon,
+  HashIcon,
   InfoIcon,
   LoaderIcon,
   MenuIcon,
@@ -116,7 +119,15 @@ const SessionPageMainContent: FC<
   const [previousConversationLength, setPreviousConversationLength] =
     useState(0);
   const [isDiffModalOpen, setIsDiffModalOpen] = useState(false);
+  const [isSessionIdCopied, setIsSessionIdCopied] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const handleCopySessionId = async () => {
+    if (!sessionId) return;
+    await navigator.clipboard.writeText(sessionId);
+    setIsSessionIdCopied(true);
+    setTimeout(() => setIsSessionIdCopied(false), 2000);
+  };
 
   const abortTask = useMutation({
     mutationFn: async (sessionProcessId: string) => {
@@ -191,7 +202,7 @@ const SessionPageMainContent: FC<
     <>
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
         <header className="px-2 sm:px-3 py-2 sm:py-3 sticky top-0 z-10 bg-background w-full flex-shrink-0 min-w-0 border-b space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               variant="ghost"
               size="sm"
@@ -201,6 +212,11 @@ const SessionPageMainContent: FC<
             >
               <MenuIcon className="w-4 h-4" />
             </Button>
+            {projectName && (
+              <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 h-7 px-3 text-sm font-semibold flex-shrink-0">
+                {projectName}
+              </Badge>
+            )}
             <h1 className="text-lg sm:text-2xl md:text-3xl font-bold break-all overflow-ellipsis line-clamp-1 min-w-0">
               {headerTitle}
             </h1>
@@ -239,19 +255,43 @@ const SessionPageMainContent: FC<
                 </Tooltip>
               )}
               {isExistingSession && sessionId && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge
-                      variant="secondary"
-                      className="h-6 text-xs flex items-center max-w-full font-mono cursor-help"
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 flex-shrink-0"
+                      aria-label="Session ID"
                     >
-                      <span className="truncate">{sessionId}</span>
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <Trans id="control.session_id" />
-                  </TooltipContent>
-                </Tooltip>
+                      <HashIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-3" align="start">
+                    <div className="space-y-2">
+                      <span className="text-xs text-muted-foreground">
+                        <Trans id="control.session_id" />
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+                          {sessionId}
+                        </code>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 flex-shrink-0"
+                          onClick={handleCopySessionId}
+                          aria-label="Copy session ID"
+                        >
+                          {isSessionIdCopied ? (
+                            <CheckIcon className="w-3.5 h-3.5 text-green-600" />
+                          ) : (
+                            <CopyIcon className="w-3.5 h-3.5" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
             {relatedSessionProcess?.status === "running" && (

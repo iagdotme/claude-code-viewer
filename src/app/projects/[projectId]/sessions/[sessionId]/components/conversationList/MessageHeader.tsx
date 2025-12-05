@@ -38,10 +38,10 @@ export const MessageHeader: FC<{
   const { name, icon: Icon, iconColor } = getSenderInfo();
 
   return (
-    <div className="flex items-center justify-between mb-2 px-1">
+    <div className="flex items-center justify-between mt-6 mb-3 px-2">
       <div className="flex items-center gap-2">
         <Icon className={`h-4 w-4 ${iconColor}`} />
-        <span className="text-sm font-medium">{name}</span>
+        <span className="text-sm font-semibold">{name}</span>
       </div>
       <span className="text-xs text-muted-foreground">
         {formatLocaleDate(timestamp, {

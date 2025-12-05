@@ -30,39 +30,52 @@ export const QueueOperationConversationContent: FC<{
   });
 
   return (
-    <Collapsible>
-      <CollapsibleTrigger asChild>
-        <div
-          className="flex items-center gap-2 cursor-pointer rounded p-2 -mx-2 transition-all duration-200"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
+    <div
+      className="mb-2"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Collapsible>
+        <CollapsibleTrigger asChild>
           <div
-            className={`flex items-center justify-center rounded-full p-1.5 transition-all duration-200 ${
-              isHovered ? "bg-muted/80" : "bg-transparent"
+            className={`cursor-pointer transition-all duration-200 px-2 py-1.5 rounded ${
+              isHovered
+                ? "bg-gray-50/50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800"
+                : "bg-transparent border border-transparent"
             }`}
           >
-            <Icon className="h-3 w-3 text-muted-foreground" />
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                className={`flex items-center justify-center rounded-full p-1 transition-all duration-200 ${
+                  isHovered ? "bg-gray-100 dark:bg-gray-900/40" : ""
+                }`}
+              >
+                <Icon
+                  className={`h-3.5 w-3.5 flex-shrink-0 transition-colors duration-200 ${
+                    isHovered
+                      ? "text-gray-600 dark:text-gray-400"
+                      : "text-muted-foreground"
+                  }`}
+                />
+              </div>
+              <div
+                className={`flex-1 transition-all duration-200 ${
+                  isHovered ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <span className="text-sm font-medium">{title}</span>
+              </div>
+              <span className="text-xs text-muted-foreground/60 ml-auto flex-shrink-0">
+                {formattedTime}
+              </span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-all duration-200 flex-shrink-0 ${
+                  isHovered ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            </div>
           </div>
-          <div
-            className={`flex-1 transition-all duration-200 ${
-              isHovered ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <h4 className="text-xs font-medium text-muted-foreground">
-              {title}
-            </h4>
-          </div>
-          <span className="text-xs text-muted-foreground/60 ml-auto">
-            {formattedTime}
-          </span>
-          <ChevronDown
-            className={`h-3 w-3 text-muted-foreground transition-all duration-200 ${
-              isHovered ? "opacity-100" : "opacity-0"
-            }`}
-          />
-        </div>
-      </CollapsibleTrigger>
+        </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="bg-background rounded border p-3 mt-2">
           <div className="space-y-2 text-xs">
@@ -86,7 +99,8 @@ export const QueueOperationConversationContent: FC<{
             )}
           </div>
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 };
