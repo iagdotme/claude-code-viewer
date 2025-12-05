@@ -46,7 +46,7 @@ export const MessageHeader: FC<{
       <span className="text-xs text-muted-foreground">
         {formatLocaleDate(timestamp, {
           locale: config.locale,
-          target: "time",
+          target: "timeOnly",
         })}
       </span>
     </div>

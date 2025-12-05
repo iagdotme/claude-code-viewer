@@ -24,6 +24,11 @@ export const QueueOperationConversationContent: FC<{
     : "Processing Started";
   const Icon = isEnqueue ? SendIcon : PlayIcon;
 
+  const formattedTime = formatLocaleDate(conversation.timestamp, {
+    locale: config.locale,
+    target: "timeOnly",
+  });
+
   return (
     <Collapsible>
       <CollapsibleTrigger asChild>
@@ -34,28 +39,23 @@ export const QueueOperationConversationContent: FC<{
         >
           <div
             className={`flex items-center justify-center rounded-full p-1.5 transition-all duration-200 ${
-              isHovered
-                ? "bg-muted/80"
-                : "bg-transparent"
+              isHovered ? "bg-muted/80" : "bg-transparent"
             }`}
           >
             <Icon className="h-3 w-3 text-muted-foreground" />
           </div>
           <div
-            className={`flex items-center gap-2 flex-1 transition-all duration-200 ${
+            className={`flex-1 transition-all duration-200 ${
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           >
             <h4 className="text-xs font-medium text-muted-foreground">
               {title}
             </h4>
-            <span className="text-xs text-muted-foreground/60">
-              {formatLocaleDate(conversation.timestamp, {
-                locale: config.locale,
-                target: "time",
-              })}
-            </span>
           </div>
+          <span className="text-xs text-muted-foreground/60 ml-auto">
+            {formattedTime}
+          </span>
           <ChevronDown
             className={`h-3 w-3 text-muted-foreground transition-all duration-200 ${
               isHovered ? "opacity-100" : "opacity-0"

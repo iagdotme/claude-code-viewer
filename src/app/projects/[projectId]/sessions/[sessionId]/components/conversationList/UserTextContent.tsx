@@ -86,61 +86,101 @@ const extractSystemContext = (text: string) => {
 };
 
 /**
- * Renders a collapsible system context block
+ * Renders a collapsible system context block with icon-only by default, expanding on hover
  */
 const SystemContextBlock: FC<{
   type: "ide_opened_file" | "system_reminder" | "ide_selection";
   content: string;
 }> = ({ type, content }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const config = {
     ide_opened_file: {
       icon: FileIcon,
       label: "IDE Context: File Opened",
-      bgColor: "bg-blue-50/50 dark:bg-blue-950/20",
-      borderColor: "border-blue-200 dark:border-blue-800",
+      hoverBg: "bg-blue-50/50 dark:bg-blue-950/20",
+      hoverBorder: "border-blue-200 dark:border-blue-800",
+      iconHoverBg: "bg-blue-100 dark:bg-blue-900/40",
       iconColor: "text-blue-500 dark:text-blue-400",
     },
     system_reminder: {
       icon: InfoIcon,
       label: "System Context",
-      bgColor: "bg-amber-50/50 dark:bg-amber-950/20",
-      borderColor: "border-amber-200 dark:border-amber-800",
+      hoverBg: "bg-amber-50/50 dark:bg-amber-950/20",
+      hoverBorder: "border-amber-200 dark:border-amber-800",
+      iconHoverBg: "bg-amber-100 dark:bg-amber-900/40",
       iconColor: "text-amber-500 dark:text-amber-400",
     },
     ide_selection: {
       icon: FileIcon,
       label: "IDE Context: Selection",
-      bgColor: "bg-purple-50/50 dark:bg-purple-950/20",
-      borderColor: "border-purple-200 dark:border-purple-800",
+      hoverBg: "bg-purple-50/50 dark:bg-purple-950/20",
+      hoverBorder: "border-purple-200 dark:border-purple-800",
+      iconHoverBg: "bg-purple-100 dark:bg-purple-900/40",
       iconColor: "text-purple-500 dark:text-purple-400",
     },
   };
 
-  const { icon: Icon, label, bgColor, borderColor, iconColor } = config[type];
+  const { icon: Icon, label, hoverBg, hoverBorder, iconHoverBg, iconColor } =
+    config[type];
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div
-        className={`${bgColor} ${borderColor} border rounded-lg mb-2 overflow-hidden`}
-      >
-        <CollapsibleTrigger className="w-full px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-          <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
-          <span className="flex-1 text-left font-medium">{label}</span>
-          <ChevronDown
-            className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          />
+    <div
+      className="mb-2"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <div
+            className={`cursor-pointer transition-all duration-200 px-2 py-1.5 rounded ${
+              isHovered
+                ? `${hoverBg} border ${hoverBorder}`
+                : "bg-transparent border border-transparent"
+            }`}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                className={`flex items-center justify-center rounded-full p-1 transition-all duration-200 ${
+                  isHovered ? iconHoverBg : ""
+                }`}
+              >
+                <Icon
+                  className={`h-3.5 w-3.5 flex-shrink-0 transition-colors duration-200 ${
+                    isHovered ? iconColor : "text-muted-foreground"
+                  }`}
+                />
+              </div>
+              <div
+                className={`flex-1 transition-all duration-200 ${
+                  isHovered ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <span className="text-xs font-medium text-muted-foreground">
+                  {label}
+                </span>
+              </div>
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-all duration-200 flex-shrink-0 ${
+                  isHovered ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            </div>
+          </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-3 pb-2 pt-0">
-            <pre className="text-xs text-muted-foreground whitespace-pre-wrap break-words max-h-40 overflow-y-auto">
-              {content}
-            </pre>
+          <div
+            className={`${hoverBg} border ${hoverBorder} rounded-lg mt-1 overflow-hidden`}
+          >
+            <div className="px-3 py-2">
+              <pre className="text-xs text-muted-foreground whitespace-pre-wrap break-words max-h-40 overflow-y-auto">
+                {content}
+              </pre>
+            </div>
           </div>
         </CollapsibleContent>
-      </div>
-    </Collapsible>
+      </Collapsible>
+    </div>
   );
 };
 

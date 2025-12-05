@@ -13,6 +13,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useConfig } from "@/app/hooks/useConfig";
+import { formatLocaleDate } from "@/lib/date/formatLocaleDate";
 import type { ToolResultContent } from "@/lib/conversation-schema/content/ToolResultContentSchema";
 import type { AssistantMessageContent } from "@/lib/conversation-schema/message/AssistantMessageSchema";
 import { useTheme } from "../../../../../../../hooks/useTheme";
@@ -27,6 +29,7 @@ export const taskToolInputSchema = z.object({
 
 export const AssistantConversationContent: FC<{
   content: AssistantMessageContent;
+  timestamp?: string;
   getToolResult: (toolUseId: string) => ToolResultContent | undefined;
   getAgentIdForToolUse: (toolUseId: string) => string | undefined;
   getSidechainConversationByPrompt: (
@@ -37,6 +40,7 @@ export const AssistantConversationContent: FC<{
   sessionId: string;
 }> = ({
   content,
+  timestamp,
   getToolResult,
   getAgentIdForToolUse,
   getSidechainConversationByPrompt,
@@ -45,8 +49,16 @@ export const AssistantConversationContent: FC<{
   sessionId,
 }) => {
   const { resolvedTheme } = useTheme();
+  const { config } = useConfig();
   const syntaxTheme = resolvedTheme === "dark" ? oneDark : oneLight;
   const [isHovered, setIsHovered] = useState(false);
+
+  const formattedTime = timestamp
+    ? formatLocaleDate(timestamp, {
+        locale: config.locale,
+        target: "timeOnly",
+      })
+    : null;
 
   if (content.type === "text") {
     return (
@@ -64,9 +76,14 @@ export const AssistantConversationContent: FC<{
             <CardHeader className="cursor-pointer hover:bg-muted/80 rounded-t-lg transition-all duration-200 py-0 px-4 group">
               <div className="flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-muted-foreground group-hover:text-yellow-600 transition-colors" />
-                <CardTitle className="text-sm font-medium group-hover:text-foreground transition-colors">
+                <CardTitle className="text-sm font-medium group-hover:text-foreground transition-colors flex-1">
                   <Trans id="assistant.thinking" />
                 </CardTitle>
+                {formattedTime && (
+                  <span className="text-xs text-muted-foreground/60">
+                    {formattedTime}
+                  </span>
+                )}
                 <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </div>
             </CardHeader>
@@ -147,7 +164,7 @@ export const AssistantConversationContent: FC<{
                     />
                   </div>
                   <div
-                    className={`flex items-center gap-1.5 min-w-0 transition-all duration-200 ${
+                    className={`flex items-center gap-1.5 min-w-0 flex-1 transition-all duration-200 ${
                       isHovered ? "opacity-100" : "opacity-0"
                     }`}
                   >
@@ -158,8 +175,13 @@ export const AssistantConversationContent: FC<{
                       {toolDisplayInfo.title || content.name}
                     </span>
                   </div>
+                  {formattedTime && (
+                    <span className="text-xs text-muted-foreground/60 ml-auto flex-shrink-0">
+                      {formattedTime}
+                    </span>
+                  )}
                   <ChevronDown
-                    className={`h-3.5 w-3.5 text-muted-foreground transition-all duration-200 flex-shrink-0 ml-auto ${
+                    className={`h-3.5 w-3.5 text-muted-foreground transition-all duration-200 flex-shrink-0 ${
                       isHovered ? "opacity-100" : "opacity-0"
                     }`}
                   />

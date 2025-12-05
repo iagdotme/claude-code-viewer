@@ -123,6 +123,7 @@ export const ConversationItem: FC<{
           <li key={content.toString()}>
             <AssistantConversationContent
               content={content}
+              timestamp={conversation.timestamp}
               getToolResult={getToolResult}
               getAgentIdForToolUse={getAgentIdForToolUse}
               getSidechainConversationByPrompt={
