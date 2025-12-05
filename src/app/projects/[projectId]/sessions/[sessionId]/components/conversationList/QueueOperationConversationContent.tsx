@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, SendIcon, PlayIcon } from "lucide-react";
 import type { FC } from "react";
 import {
   Collapsible,
@@ -14,16 +14,26 @@ export const QueueOperationConversationContent: FC<{
   conversation: QueueOperationEntry;
 }> = ({ conversation }) => {
   const { config } = useConfig();
-  const title =
-    conversation.operation === "enqueue"
-      ? "Queue Operation: Enqueue"
-      : "Queue Operation: Dequeue";
+
+  // User-friendly labels
+  const isEnqueue = conversation.operation === "enqueue";
+  const title = isEnqueue ? "Message Queued" : "Processing Started";
+  const Icon = isEnqueue ? SendIcon : PlayIcon;
 
   return (
     <Collapsible>
       <CollapsibleTrigger asChild>
-        <div className="flex items-center justify-between cursor-pointer hover:bg-muted/50 rounded p-2 -mx-2">
-          <h4 className="text-xs font-medium text-muted-foreground">{title}</h4>
+        <div className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 rounded p-2 -mx-2">
+          <Icon className="h-3 w-3 text-muted-foreground" />
+          <h4 className="text-xs font-medium text-muted-foreground flex-1">
+            {title}
+          </h4>
+          <span className="text-xs text-muted-foreground/60">
+            {formatLocaleDate(conversation.timestamp, {
+              locale: config.locale,
+              target: "time",
+            })}
+          </span>
           <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
         </div>
       </CollapsibleTrigger>
@@ -32,31 +42,18 @@ export const QueueOperationConversationContent: FC<{
           <div className="space-y-2 text-xs">
             <div>
               <span className="font-medium text-muted-foreground">
-                Operation:
-              </span>{" "}
-              {conversation.operation}
-            </div>
-            <div>
-              <span className="font-medium text-muted-foreground">
                 Session ID:
               </span>{" "}
-              {conversation.sessionId}
+              <span className="font-mono text-muted-foreground/80">
+                {conversation.sessionId}
+              </span>
             </div>
-            <div>
-              <span className="font-medium text-muted-foreground">
-                Timestamp:
-              </span>{" "}
-              {formatLocaleDate(conversation.timestamp, {
-                locale: config.locale,
-                target: "time",
-              })}
-            </div>
-            {conversation.operation === "enqueue" && (
+            {isEnqueue && (
               <div>
                 <span className="font-medium text-muted-foreground">
-                  Content:
+                  Message Content:
                 </span>
-                <pre className="mt-1 overflow-x-auto whitespace-pre-wrap">
+                <pre className="mt-1 overflow-x-auto whitespace-pre-wrap text-muted-foreground/80">
                   {normalizeQueueOperationContent(conversation.content)}
                 </pre>
               </div>
