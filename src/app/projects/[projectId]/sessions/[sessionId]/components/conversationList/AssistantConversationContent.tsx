@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react";
 import { ChevronDown, Lightbulb, Wrench } from "lucide-react";
-import type { FC } from "react";
+import { type FC, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   oneDark,
@@ -19,7 +19,7 @@ import { useTheme } from "../../../../../../../hooks/useTheme";
 import type { SidechainConversation } from "../../../../../../../lib/conversation-schema";
 import { MarkdownContent } from "../../../../../../components/MarkdownContent";
 import { TaskModal } from "./TaskModal";
-import { ToolInputOneLine } from "./ToolInputOneLine";
+import { getToolDisplayInfo } from "./getToolDisplayInfo";
 
 export const taskToolInputSchema = z.object({
   prompt: z.string(),
@@ -46,6 +46,8 @@ export const AssistantConversationContent: FC<{
 }) => {
   const { resolvedTheme } = useTheme();
   const syntaxTheme = resolvedTheme === "dark" ? oneDark : oneLight;
+  const [isHovered, setIsHovered] = useState(false);
+
   if (content.type === "text") {
     return (
       <div className="w-full mx-1 sm:mx-2 my-4 sm:my-6">
@@ -83,6 +85,10 @@ export const AssistantConversationContent: FC<{
 
   if (content.type === "tool_use") {
     const toolResult = getToolResult(content.id);
+    const toolDisplayInfo = getToolDisplayInfo(
+      content.name,
+      content.input as Record<string, unknown>
+    );
 
     const taskModal = (() => {
       const taskInput =
@@ -111,98 +117,143 @@ export const AssistantConversationContent: FC<{
     })();
 
     return (
-      <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20 mb-2 p-0 overflow-hidden">
+      <div
+        className="mb-2"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <Collapsible>
           <div className="flex items-center min-w-0">
             <CollapsibleTrigger asChild>
-              <div className="flex-1 min-w-0 cursor-pointer hover:bg-blue-100/50 dark:hover:bg-blue-900/20 transition-all duration-200 px-3 py-1.5 group">
+              <div
+                className={`flex-1 min-w-0 cursor-pointer transition-all duration-200 px-2 py-1.5 rounded group ${
+                  isHovered
+                    ? "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800"
+                    : "bg-transparent border border-transparent"
+                }`}
+              >
                 <div className="flex items-center gap-2 min-w-0">
-                  <Wrench className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                  <div className="w-full min-w-0 text-sm font-medium group-hover:text-foreground transition-colors overflow-hidden text-ellipsis whitespace-nowrap">
-                    {content.name}
-                    {Object.keys(content.input).length > 0 && (
-                      <span className="font-normal">
-                        {" "}
-                        (
-                        <ToolInputOneLine input={content.input} />)
-                      </span>
-                    )}
+                  <div
+                    className={`flex items-center justify-center rounded-full p-1 transition-all duration-200 ${
+                      isHovered ? "bg-blue-100 dark:bg-blue-900/40" : ""
+                    }`}
+                  >
+                    <Wrench
+                      className={`h-3.5 w-3.5 flex-shrink-0 transition-colors duration-200 ${
+                        isHovered
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-muted-foreground"
+                      }`}
+                    />
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180 flex-shrink-0" />
+                  <div
+                    className={`flex items-center gap-1.5 min-w-0 transition-all duration-200 ${
+                      isHovered ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    <span className="text-xs text-muted-foreground font-medium">
+                      Tool:
+                    </span>
+                    <span className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap">
+                      {toolDisplayInfo.title || content.name}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 text-muted-foreground transition-all duration-200 flex-shrink-0 ml-auto ${
+                      isHovered ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
                 </div>
               </div>
             </CollapsibleTrigger>
-            {taskModal && (
-              <div className="flex-shrink-0 border-l border-blue-200 dark:border-blue-800 flex items-center">
+            {taskModal && isHovered && (
+              <div className="flex-shrink-0 border-l border-blue-200 dark:border-blue-800 flex items-center ml-1">
                 {taskModal}
               </div>
             )}
           </div>
           <CollapsibleContent>
-            <div className="space-y-3 py-3 px-4 border-t border-blue-200 dark:border-blue-800">
-              <div>
-                <h4 className="text-xs font-medium text-muted-foreground mb-1">
-                  <Trans id="assistant.tool.tool_id" />
-                </h4>
-                <code className="text-xs bg-background/50 px-2 py-1 rounded border border-blue-200 dark:border-blue-800 font-mono">
-                  {content.id}
-                </code>
-              </div>
-              <div>
-                <h4 className="text-xs font-medium text-muted-foreground mb-2">
-                  <Trans id="assistant.tool.input_parameters" />
-                </h4>
-                <SyntaxHighlighter
-                  style={syntaxTheme}
-                  language="json"
-                  PreTag="div"
-                  className="text-xs rounded"
-                >
-                  {JSON.stringify(content.input, null, 2)}
-                </SyntaxHighlighter>
-              </div>
-              {toolResult && (
+            <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20 p-0 overflow-hidden mt-1">
+              <div className="space-y-3 py-3 px-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Tool:
+                  </span>
+                  <code className="text-xs bg-background/50 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 font-mono">
+                    {content.name}
+                  </code>
+                </div>
+                {toolDisplayInfo.description && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">
+                      {toolDisplayInfo.description}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-xs font-medium text-muted-foreground mb-1">
+                    <Trans id="assistant.tool.tool_id" />
+                  </h4>
+                  <code className="text-xs bg-background/50 px-2 py-1 rounded border border-blue-200 dark:border-blue-800 font-mono">
+                    {content.id}
+                  </code>
+                </div>
                 <div>
                   <h4 className="text-xs font-medium text-muted-foreground mb-2">
-                    <Trans id="assistant.tool.result" />
+                    <Trans id="assistant.tool.input_parameters" />
                   </h4>
-                  <div className="bg-background rounded border p-3">
-                    {typeof toolResult.content === "string" ? (
-                      <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words">
-                        {toolResult.content}
-                      </pre>
-                    ) : (
-                      toolResult.content.map((item) => {
-                        if (item.type === "image") {
-                          return (
-                            <img
-                              key={item.source.data}
-                              src={`data:${item.source.media_type};base64,${item.source.data}`}
-                              alt="Tool Result"
-                            />
-                          );
-                        }
-                        if (item.type === "text") {
-                          return (
-                            <pre
-                              key={item.text}
-                              className="text-xs overflow-x-auto whitespace-pre-wrap break-words"
-                            >
-                              {item.text}
-                            </pre>
-                          );
-                        }
-                        item satisfies never;
-                        throw new Error("Unexpected tool result content type");
-                      })
-                    )}
-                  </div>
+                  <SyntaxHighlighter
+                    style={syntaxTheme}
+                    language="json"
+                    PreTag="div"
+                    className="text-xs rounded"
+                  >
+                    {JSON.stringify(content.input, null, 2)}
+                  </SyntaxHighlighter>
                 </div>
-              )}
-            </div>
+                {toolResult && (
+                  <div>
+                    <h4 className="text-xs font-medium text-muted-foreground mb-2">
+                      <Trans id="assistant.tool.result" />
+                    </h4>
+                    <div className="bg-background rounded border p-3">
+                      {typeof toolResult.content === "string" ? (
+                        <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words">
+                          {toolResult.content}
+                        </pre>
+                      ) : (
+                        toolResult.content.map((item) => {
+                          if (item.type === "image") {
+                            return (
+                              <img
+                                key={item.source.data}
+                                src={`data:${item.source.media_type};base64,${item.source.data}`}
+                                alt="Tool Result"
+                              />
+                            );
+                          }
+                          if (item.type === "text") {
+                            return (
+                              <pre
+                                key={item.text}
+                                className="text-xs overflow-x-auto whitespace-pre-wrap break-words"
+                              >
+                                {item.text}
+                              </pre>
+                            );
+                          }
+                          item satisfies never;
+                          throw new Error("Unexpected tool result content type");
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
           </CollapsibleContent>
         </Collapsible>
-      </Card>
+      </div>
     );
   }
 

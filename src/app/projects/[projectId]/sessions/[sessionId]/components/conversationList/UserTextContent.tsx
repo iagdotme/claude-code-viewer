@@ -26,39 +26,51 @@ const extractSystemContext = (text: string) => {
     /<ide_opened_file>([\s\S]*?)<\/ide_opened_file>/g;
   let match;
   while ((match = ideOpenedFileRegex.exec(text)) !== null) {
-    systemContextBlocks.push({
-      type: "ide_opened_file",
-      content: match[1].trim(),
-    });
+    const content = match[1];
+    if (content !== undefined) {
+      systemContextBlocks.push({
+        type: "ide_opened_file",
+        content: content.trim(),
+      });
+    }
   }
 
   // Extract ide-opened-file tags (hyphenated variant)
   const ideOpenedFileHyphenRegex =
     /<ide-opened-file>([\s\S]*?)<\/ide-opened-file>/g;
   while ((match = ideOpenedFileHyphenRegex.exec(text)) !== null) {
-    systemContextBlocks.push({
-      type: "ide_opened_file",
-      content: match[1].trim(),
-    });
+    const content = match[1];
+    if (content !== undefined) {
+      systemContextBlocks.push({
+        type: "ide_opened_file",
+        content: content.trim(),
+      });
+    }
   }
 
   // Extract system-reminder tags
   const systemReminderRegex =
     /<system-reminder>([\s\S]*?)<\/system-reminder>/g;
   while ((match = systemReminderRegex.exec(text)) !== null) {
-    systemContextBlocks.push({
-      type: "system_reminder",
-      content: match[1].trim(),
-    });
+    const content = match[1];
+    if (content !== undefined) {
+      systemContextBlocks.push({
+        type: "system_reminder",
+        content: content.trim(),
+      });
+    }
   }
 
   // Extract ide_selection tags
   const ideSelectionRegex = /<ide_selection>([\s\S]*?)<\/ide_selection>/g;
   while ((match = ideSelectionRegex.exec(text)) !== null) {
-    systemContextBlocks.push({
-      type: "ide_selection",
-      content: match[1].trim(),
-    });
+    const content = match[1];
+    if (content !== undefined) {
+      systemContextBlocks.push({
+        type: "ide_selection",
+        content: content.trim(),
+      });
+    }
   }
 
   // Remove all system context tags from main content

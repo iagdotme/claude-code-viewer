@@ -6,6 +6,7 @@ import type {
 import type { ToolResultContent } from "@/lib/conversation-schema/content/ToolResultContentSchema";
 import { AssistantConversationContent } from "./AssistantConversationContent";
 import { FileHistorySnapshotConversationContent } from "./FileHistorySnapshotConversationContent";
+import { MessageHeader } from "./MessageHeader";
 import { MetaConversationContent } from "./MetaConversationContent";
 import { QueueOperationConversationContent } from "./QueueOperationConversationContent";
 import { SummaryConversationContent } from "./SummaryConversationContent";
@@ -43,9 +44,12 @@ export const ConversationItem: FC<{
 
   if (conversation.type === "system") {
     return (
-      <SystemConversationContent>
-        {conversation.content}
-      </SystemConversationContent>
+      <div>
+        <MessageHeader sender="system" timestamp={conversation.timestamp} />
+        <SystemConversationContent>
+          {conversation.content}
+        </SystemConversationContent>
+      </div>
     );
   }
 
@@ -76,16 +80,44 @@ export const ConversationItem: FC<{
         </ul>
       );
 
-    return conversation.isMeta === true ? (
-      // 展開可能にしてデフォで非展開
-      <MetaConversationContent>{userConversationJsx}</MetaConversationContent>
-    ) : (
-      userConversationJsx
+    // Skip header for meta messages and tool results
+    const isToolResult =
+      typeof conversation.message.content !== "string" &&
+      conversation.message.content.some(
+        (c) => typeof c === "object" && c.type === "tool_result"
+      );
+
+    if (conversation.isMeta === true) {
+      return (
+        <MetaConversationContent>{userConversationJsx}</MetaConversationContent>
+      );
+    }
+
+    // For tool results, don't show header
+    if (isToolResult) {
+      return userConversationJsx;
+    }
+
+    return (
+      <div>
+        <MessageHeader sender="user" timestamp={conversation.timestamp} />
+        {userConversationJsx}
+      </div>
     );
   }
 
   if (conversation.type === "assistant") {
-    return (
+    // Check if this is only tool_use content (no text)
+    const hasTextContent = conversation.message.content.some(
+      (c) => c.type === "text"
+    );
+    const hasOnlyToolUse =
+      !hasTextContent &&
+      conversation.message.content.every(
+        (c) => c.type === "tool_use" || c.type === "thinking"
+      );
+
+    const content = (
       <ul className="w-full">
         {conversation.message.content.map((content) => (
           <li key={content.toString()}>
@@ -103,6 +135,18 @@ export const ConversationItem: FC<{
           </li>
         ))}
       </ul>
+    );
+
+    // For tool-only messages, don't show the header (the tool icons are enough)
+    if (hasOnlyToolUse) {
+      return content;
+    }
+
+    return (
+      <div>
+        <MessageHeader sender="assistant" timestamp={conversation.timestamp} />
+        {content}
+      </div>
     );
   }
 

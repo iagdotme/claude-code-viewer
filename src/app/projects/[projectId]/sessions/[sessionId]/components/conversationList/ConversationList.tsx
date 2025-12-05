@@ -12,6 +12,9 @@ import type { ToolResultContent } from "@/lib/conversation-schema/content/ToolRe
 import type { ErrorJsonl } from "../../../../../../../server/core/types";
 import { useSidechain } from "../../hooks/useSidechain";
 import { ConversationItem } from "./ConversationItem";
+import { DateDivider } from "./DateDivider";
+import { getConversationTimestamp } from "./getConversationTimestamp";
+import { isSameDay } from "./getDateFromTimestamp";
 
 /**
  * Type guard to check if toolUseResult contains agentId.
@@ -175,6 +178,10 @@ export const ConversationList: FC<ConversationListProps> = ({
     [toolUseIdToAgentIdMap],
   );
 
+  // Track the previous timestamp for date divider logic
+  let lastTimestamp: string | null = null;
+  let isFirstDate = true;
+
   return (
     <ul>
       {conversations.flatMap((conversation) => {
@@ -189,6 +196,33 @@ export const ConversationList: FC<ConversationListProps> = ({
 
         if (isDebug) {
           console.log("conversation", conversation);
+        }
+
+        const currentTimestamp = getConversationTimestamp(conversation);
+        const elements: React.ReactNode[] = [];
+
+        // Check if we need to add a date divider
+        if (currentTimestamp) {
+          const needsDateDivider =
+            lastTimestamp === null ||
+            !isSameDay(currentTimestamp, lastTimestamp);
+
+          if (needsDateDivider) {
+            elements.push(
+              <li
+                key={`date-divider-${currentTimestamp}`}
+                className="w-full"
+              >
+                <DateDivider
+                  timestamp={currentTimestamp}
+                  isFirst={isFirstDate}
+                />
+              </li>
+            );
+            isFirstDate = false;
+          }
+
+          lastTimestamp = currentTimestamp;
         }
 
         const elm = (
@@ -212,7 +246,7 @@ export const ConversationList: FC<ConversationListProps> = ({
           conversation.type !== "queue-operation" &&
           conversation.isSidechain;
 
-        return [
+        elements.push(
           <li
             className={`w-full flex ${
               isSidechain ||
@@ -228,7 +262,9 @@ export const ConversationList: FC<ConversationListProps> = ({
               {elm}
             </div>
           </li>,
-        ];
+        );
+
+        return elements;
       })}
     </ul>
   );

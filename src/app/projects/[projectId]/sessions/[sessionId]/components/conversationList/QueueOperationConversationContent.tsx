@@ -1,5 +1,5 @@
 import { ChevronDown, SendIcon, PlayIcon } from "lucide-react";
-import type { FC } from "react";
+import { type FC, useState } from "react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -9,32 +9,58 @@ import { useConfig } from "@/app/hooks/useConfig";
 import { formatLocaleDate } from "@/lib/date/formatLocaleDate";
 import { normalizeQueueOperationContent } from "@/lib/conversation-schema/entry/normalizeQueueOperationContent";
 import type { QueueOperationEntry } from "@/lib/conversation-schema/entry/QueueOperationEntrySchema";
+import { AI_ASSISTANT_NAME } from "@/lib/constants/aiAssistant";
 
 export const QueueOperationConversationContent: FC<{
   conversation: QueueOperationEntry;
 }> = ({ conversation }) => {
   const { config } = useConfig();
+  const [isHovered, setIsHovered] = useState(false);
 
   // User-friendly labels
   const isEnqueue = conversation.operation === "enqueue";
-  const title = isEnqueue ? "Message Queued" : "Processing Started";
+  const title = isEnqueue
+    ? `Message sent to ${AI_ASSISTANT_NAME}`
+    : "Processing Started";
   const Icon = isEnqueue ? SendIcon : PlayIcon;
 
   return (
     <Collapsible>
       <CollapsibleTrigger asChild>
-        <div className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 rounded p-2 -mx-2">
-          <Icon className="h-3 w-3 text-muted-foreground" />
-          <h4 className="text-xs font-medium text-muted-foreground flex-1">
-            {title}
-          </h4>
-          <span className="text-xs text-muted-foreground/60">
-            {formatLocaleDate(conversation.timestamp, {
-              locale: config.locale,
-              target: "time",
-            })}
-          </span>
-          <ChevronDown className="h-3 w-3 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+        <div
+          className="flex items-center gap-2 cursor-pointer rounded p-2 -mx-2 transition-all duration-200"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div
+            className={`flex items-center justify-center rounded-full p-1.5 transition-all duration-200 ${
+              isHovered
+                ? "bg-muted/80"
+                : "bg-transparent"
+            }`}
+          >
+            <Icon className="h-3 w-3 text-muted-foreground" />
+          </div>
+          <div
+            className={`flex items-center gap-2 flex-1 transition-all duration-200 ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <h4 className="text-xs font-medium text-muted-foreground">
+              {title}
+            </h4>
+            <span className="text-xs text-muted-foreground/60">
+              {formatLocaleDate(conversation.timestamp, {
+                locale: config.locale,
+                target: "time",
+              })}
+            </span>
+          </div>
+          <ChevronDown
+            className={`h-3 w-3 text-muted-foreground transition-all duration-200 ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}
+          />
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
