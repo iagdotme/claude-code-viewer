@@ -1,0 +1,36 @@
+# Development docker-compose with mounted volumes for live editing
+# Usage: docker-compose -f docker-compose.dev.yml up --build
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: development
+      # Frontend dev server port
+      DEV_FE_PORT: 3400
+      # Backend API port
+      DEV_BE_PORT: 3401
+      # Make Vite listen on all interfaces (needed for Docker)
+      VITE_HOST: "true"
+    ports:
+      # Frontend (Vite dev server with hot reload)
+      - "3400:3400"
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Use named volume for node_modules to avoid overwriting with host's
+      - node_modules:/app/node_modules
+      # Mount Claude projects directory (read-only)
+      - ~/.claude:/root/.claude:ro
+      # Optional: workspace for active sessions
+      - workspace:/root/workspace
+    # Install deps and run dev server
+    command: sh -c "pnpm install && pnpm dev"
+    stdin_open: true
+    tty: true
+
+volumes:
+  node_modules:
+  workspace:
